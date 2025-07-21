@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeu – Normes ou Valeurs ?</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    h1 { color: #2c3e50; }
+    .carte { background: white; border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-top: 20px; }
+    button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 Jeu : Normes ou Valeurs ?</h1>
+
+  <p>Devine si l'énoncé décrit une <strong>norme</strong> ou une <strong>valeur</strong> :</p>
+
+  <div class="carte" id="carte">
+    Cliquez sur "Nouvelle carte" pour commencer
+  </div>
+
+  <button onclick="nouvelleCarte()">🔄 Nouvelle carte</button>
+
+  <div id="feedback"></div>
+
+  <script>
+    const cartes = [
+      { texte: "Il faut dire bonjour en entrant dans une pièce", type: "norme" },
+      { texte: "La liberté est un droit fondamental", type: "valeur" },
+      { texte: "On se met en rang avant d'entrer en classe", type: "norme" },
+      { texte: "La justice est importante dans une société", type: "valeur" },
+      { texte: "Il ne faut pas tricher pendant un examen", type: "norme" },
+      { texte: "La solidarité est essentielle", type: "valeur" }
+    ];
+
+    let carteActuelle = null;
+
+    function nouvelleCarte() {
+      const index = Math.floor(Math.random() * cartes.length);
+      carteActuelle = cartes[index];
+      document.getElementById('carte').innerHTML = `
+        <p><strong>${carteActuelle.texte}</strong></p>
+        <button onclick="repondre('norme')">Norme</button>
+        <button onclick="repondre('valeur')">Valeur</button>
+      `;
+      document.getElementById('feedback').innerHTML = '';
+    }
+
+    function repondre(reponse) {
+      if (reponse === carteActuelle.type) {
+        document.getElementById('feedback').innerHTML = "<p class='correct'>✅ Bonne réponse !</p>";
+      } else {
+        document.getElementById('feedback').innerHTML = "<p class='incorrect'>❌ Mauvaise réponse.</p>";
+      }
+    }
+  </script>
+
+</body>
+</html>
