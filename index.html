@@ -6,11 +6,11 @@
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f9f9f9; max-width: 700px; margin: auto; }
     h1 { color: #2c3e50; }
-    .carte, .score, .identite { background: white; border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-top: 20px; }
+    .carte, .score, .identite, .fin { background: white; border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-top: 20px; }
     button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
     .correct { color: green; }
     .incorrect { color: red; }
-    input { padding: 8px; width: 100%; margin-top: 10px; }
+    input[type="text"] { padding: 8px; width: 100%; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -18,8 +18,8 @@
   <h1>🎓 Jeu : Normes ou Valeurs ?</h1>
 
   <div class="identite" id="bloc-identite">
-    <label for="prenom">Entre ton prénom ou identifiant scolaire :</label>
-    <input type="text" id="prenom" placeholder="ex. lucie.dupont">
+    <label for="prenom">Entre ton adresse e-mail scolaire (ex. prénom.nom@ith-gembloux.be) :</label>
+    <input type="text" id="prenom" placeholder="ex. lucie.dupont@ith-gembloux.be">
     <button onclick="validerIdentite()">✅ Commencer</button>
     <p id="erreur-prenom" style="color: red;"></p>
   </div>
@@ -29,6 +29,7 @@
   </div>
 
   <button id="bouton-nouvelle" onclick="nouvelleCarte()" style="display: none;">🔄 Nouvelle carte</button>
+  <button id="terminer" onclick="terminerPartie()" style="display: none;">🛑 Terminer la partie</button>
 
   <div id="feedback"></div>
 
@@ -36,75 +37,96 @@
     Score : <span id="score-valeur">0</span> / <span id="score-total">0</span>
   </div>
 
-  <script>
+  <div class="fin" id="resume" style="display: none;"></div>
+
+<script>
+
    const cartes = [
-  // Type A – QCM : Cocher les normes
+  // QCM Type A : Normes
   {
     type: "qcm-norme",
     texte: "Parmi les propositions suivantes, cochez celles qui correspondent à la notion de NORME :",
     propositions: [
-      { texte: "Manière d’être ou d’agir qu’une société reconnaît comme idéale.", juste: false },
-      { texte: "Sert à mettre en pratique les valeurs d’une société, d’un groupe social.", juste: true },
-      { texte: "Permet d’avoir un comportement adapté et efficace dans de nombreuses situations.", juste: true },
-      { texte: "Oriente les comportements des individus.", juste: false },
-      { texte: "Rend estimable la personne qui la met en pratique.", juste: false },
-      { texte: "Sert également de référence pour déterminer ce qui est bien ou ce qui est mal.", juste: false },
-      { texte: "Action qui permet de rendre une valeur concrète.", juste: true }
+      { texte: "Sert à mettre en pratique les valeurs d’une société.", juste: true },
+      { texte: "Permet d’avoir un comportement adapté.", juste: true },
+      { texte: "Le respect de l’environnement.", juste: false },
+      { texte: "Se lever pour une minute de silence.", juste: true },
+      { texte: "La liberté.", juste: false },
+      { texte: "Le courage.", juste: false },
+      { texte: "Ne pas tricher à un examen.", juste: true }
     ]
   },
 
-  // Type 1 – Classique : Norme ou valeur ?
+  // QCM Type B : Valeurs
+  {
+    type: "qcm-valeur",
+    texte: "Parmi les propositions suivantes, cochez celles qui correspondent à la notion de VALEUR :",
+    propositions: [
+      { texte: "La justice", juste: true },
+      { texte: "Respecter les règles de l’école", juste: false },
+      { texte: "La solidarité", juste: true },
+      { texte: "Ne pas tricher", juste: false },
+      { texte: "L’égalité", juste: true },
+      { texte: "Se laver les mains", juste: false },
+      { texte: "La liberté", juste: true }
+    ]
+  },
+
+  // Type C : Associer norme ou valeur
+  { texte: "Trier ses déchets", type: "norme" },
+  { texte: "La famille", type: "valeur" },
+  { texte: "Le respect de l’environnement", type: "valeur" },
+  { texte: "Ne pas insulter les autres", type: "norme" },
+
+  // Type G/H : Associer norme ↔ valeur
+  { texte: "Respecter les autres en ne coupant pas la parole", type: "norme" },
+  { texte: "Le respect", type: "valeur" },
+  { texte: "Dire la vérité même si cela dérange", type: "norme" },
+  { texte: "L’honnêteté", type: "valeur" },
+
+  // Type Classique
   { texte: "Il faut dire bonjour en entrant dans une pièce", type: "norme" },
   { texte: "La liberté est un droit fondamental", type: "valeur" },
-  { texte: "On se met en rang avant d'entrer en classe", type: "norme" },
-  { texte: "La justice est importante dans une société", type: "valeur" },
-  { texte: "Il ne faut pas tricher pendant un examen", type: "norme" },
-  { texte: "La solidarité est essentielle", type: "valeur" },
-
-  // Type 2 – Nouveaux énoncés : Norme ou valeur ?
-  { texte: "Le courage", type: "valeur" },
-  { texte: "Ne pas parler en même temps que le professeur", type: "norme" },
-  { texte: "Le respect de l'environnement", type: "valeur" },
-  { texte: "Ne pas jeter ses déchets au sol", type: "norme" },
-  { texte: "Le travail", type: "valeur" },
-  { texte: "Se lever pour une minute de silence", type: "norme" }
+  { texte: "Ne pas utiliser son GSM sans autorisation", type: "norme" },
+  { texte: "La solidarité est essentielle", type: "valeur" }
 ];
 
-    const motsInterdits = ["con", "triche", "null", "pipi", "gros", "sexe", "fuck", "salope", "merde", "pute", "bite", "nichon", "nichons", "connasse", "salop", "put"];
+const motsInterdits = ["con", "triche", "null", "pipi", "gros", "sexe", "fuck", "merde", "pute", "bite", "nichon", "connasse"];
 
-    let carteActuelle = null;
-    let score = 0;
-    let total = 0;
+let carteActuelle = null;
+let score = 0;
+let total = 0;
 
-    function validerIdentite() {
-      const champ = document.getElementById("prenom");
-      const erreur = document.getElementById("erreur-prenom");
-      const nom = champ.value.trim().toLowerCase();
+function validerIdentite() {
+  const champ = document.getElementById("prenom");
+  const erreur = document.getElementById("erreur-prenom");
+  const nom = champ.value.trim().toLowerCase();
+  const domaine = "@ith-gembloux.be";
 
-      if (nom === "") {
-        erreur.textContent = "Merci d’entrer un prénom ou identifiant.";
-        return;
-      }
+  if (!nom.endsWith(domaine)) {
+    erreur.textContent = `Ton adresse doit se terminer par ${domaine}`;
+    return;
+  }
 
-      if (motsInterdits.some(mot => nom.includes(mot))) {
-        erreur.textContent = "Identifiant inapproprié. Merci de respecter les règles.";
-        return;
-      }
+  if (motsInterdits.some(mot => nom.includes(mot))) {
+    erreur.textContent = "Identifiant inapproprié. Merci de respecter les règles.";
+    return;
+  }
 
-      document.getElementById("bloc-identite").style.display = "none";
-      document.getElementById("carte").style.display = "block";
-      document.getElementById("bouton-nouvelle").style.display = "inline-block";
-      document.getElementById("score").style.display = "block";
-      nouvelleCarte();
-    }
+  document.getElementById("bloc-identite").style.display = "none";
+  document.getElementById("carte").style.display = "block";
+  document.getElementById("bouton-nouvelle").style.display = "inline-block";
+  document.getElementById("score").style.display = "block";
+  document.getElementById("terminer").style.display = "inline-block";
+  nouvelleCarte();
+}
 
-    function nouvelleCarte() {
+function nouvelleCarte() {
   const index = Math.floor(Math.random() * cartes.length);
   carteActuelle = cartes[index];
   document.getElementById('feedback').innerHTML = '';
 
-  // Type QCM (ex. "coche les normes")
-  if (carteActuelle.type === "qcm-norme") {
+  if (carteActuelle.type === "qcm-norme" || carteActuelle.type === "qcm-valeur") {
     let html = `<p><strong>${carteActuelle.texte}</strong></p><form id="form-qcm">`;
     carteActuelle.propositions.forEach((prop, i) => {
       html += `<label><input type="checkbox" name="prop${i}"> ${prop.texte}</label><br>`;
@@ -114,7 +136,7 @@
     return;
   }
 
-  // Type classique "Norme ou Valeur ?"
+  // Type classique "norme ou valeur"
   document.getElementById('carte').innerHTML = `
     <p><strong>${carteActuelle.texte}</strong></p>
     <button onclick="repondre('norme')">Norme</button>
@@ -122,7 +144,19 @@
   `;
 }
 
-    function validerQCM() {
+function repondre(reponse) {
+  total++;
+  if (reponse === carteActuelle.type) {
+    score++;
+    document.getElementById('feedback').innerHTML = "<p class='correct'>✅ Bonne réponse !</p>";
+  } else {
+    document.getElementById('feedback').innerHTML = "<p class='incorrect'>❌ Mauvaise réponse.</p>";
+  }
+  document.getElementById('score-valeur').textContent = score;
+  document.getElementById('score-total').textContent = total;
+}
+
+function validerQCM() {
   const form = document.getElementById('form-qcm');
   const inputs = form.querySelectorAll('input[type="checkbox"]');
   let correct = true;
@@ -146,21 +180,18 @@
   document.getElementById('score-total').textContent = total;
 }
 
-
-    function repondre(reponse) {
-      total++;
-      if (reponse === carteActuelle.type) {
-        score++;
-        document.getElementById('feedback').innerHTML = "<p class='correct'>✅ Bonne réponse !</p>";
-      } else {
-        document.getElementById('feedback').innerHTML = "<p class='incorrect'>❌ Mauvaise réponse.</p>";
-      }
-      document.getElementById('score-valeur').textContent = score;
-      document.getElementById('score-total').textContent = total;
-
-      // ici on ajoutera l'enregistrement dans Google Sheet (étape suivante)
-    }
-  </script>
+function terminerPartie() {
+  document.getElementById("carte").style.display = "none";
+  document.getElementById("bouton-nouvelle").style.display = "none";
+  document.getElementById("terminer").style.display = "none";
+  document.getElementById("feedback").innerHTML = "";
+  const msg = `<h3>🧾 Résumé</h3>
+    <p>Tu as répondu correctement à <strong>${score}</strong> question(s) sur <strong>${total}</strong>.</p>
+    <p>Merci pour ta participation !</p>`;
+  document.getElementById("resume").innerHTML = msg;
+  document.getElementById("resume").style.display = "block";
+}
+</script>
 
 </body>
 </html>
