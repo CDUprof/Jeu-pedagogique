@@ -38,6 +38,7 @@
 
   <script>
    const cartes = [
+  // Type A – QCM : Cocher les normes
   {
     type: "qcm-norme",
     texte: "Parmi les propositions suivantes, cochez celles qui correspondent à la notion de NORME :",
@@ -50,7 +51,23 @@
       { texte: "Sert également de référence pour déterminer ce qui est bien ou ce qui est mal.", juste: false },
       { texte: "Action qui permet de rendre une valeur concrète.", juste: true }
     ]
-  }
+  },
+
+  // Type 1 – Classique : Norme ou valeur ?
+  { texte: "Il faut dire bonjour en entrant dans une pièce", type: "norme" },
+  { texte: "La liberté est un droit fondamental", type: "valeur" },
+  { texte: "On se met en rang avant d'entrer en classe", type: "norme" },
+  { texte: "La justice est importante dans une société", type: "valeur" },
+  { texte: "Il ne faut pas tricher pendant un examen", type: "norme" },
+  { texte: "La solidarité est essentielle", type: "valeur" },
+
+  // Type 2 – Nouveaux énoncés : Norme ou valeur ?
+  { texte: "Le courage", type: "valeur" },
+  { texte: "Ne pas parler en même temps que le professeur", type: "norme" },
+  { texte: "Le respect de l'environnement", type: "valeur" },
+  { texte: "Ne pas jeter ses déchets au sol", type: "norme" },
+  { texte: "Le travail", type: "valeur" },
+  { texte: "Se lever pour une minute de silence", type: "norme" }
 ];
 
     const motsInterdits = ["con", "triche", "null", "pipi", "gros", "sexe", "fuck", "salope", "merde", "pute", "bite", "nichon", "nichons", "connasse", "salop", "put"];
@@ -81,11 +98,12 @@
       nouvelleCarte();
     }
 
-    function nouvelleCarte() {
+    ffunction nouvelleCarte() {
   const index = Math.floor(Math.random() * cartes.length);
   carteActuelle = cartes[index];
   document.getElementById('feedback').innerHTML = '';
 
+  // Type QCM (ex. "coche les normes")
   if (carteActuelle.type === "qcm-norme") {
     let html = `<p><strong>${carteActuelle.texte}</strong></p><form id="form-qcm">`;
     carteActuelle.propositions.forEach((prop, i) => {
@@ -93,7 +111,15 @@
     });
     html += `</form><button onclick="validerQCM()">Valider</button>`;
     document.getElementById('carte').innerHTML = html;
+    return;
   }
+
+  // Type classique "Norme ou Valeur ?"
+  document.getElementById('carte').innerHTML = `
+    <p><strong>${carteActuelle.texte}</strong></p>
+    <button onclick="repondre('norme')">Norme</button>
+    <button onclick="repondre('valeur')">Valeur</button>
+  `;
 }
 
     function validerQCM() {
