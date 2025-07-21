@@ -4,27 +4,37 @@
   <meta charset="UTF-8">
   <title>Jeu – Normes ou Valeurs ?</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; max-width: 700px; margin: auto; }
     h1 { color: #2c3e50; }
-    .carte { background: white; border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-top: 20px; }
+    .carte, .score, .identite { background: white; border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-top: 20px; }
     button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
     .correct { color: green; }
     .incorrect { color: red; }
+    input { padding: 8px; width: 100%; margin-top: 10px; }
   </style>
 </head>
 <body>
 
   <h1>🎓 Jeu : Normes ou Valeurs ?</h1>
 
-  <p>Devine si l'énoncé décrit une <strong>norme</strong> ou une <strong>valeur</strong> :</p>
+  <div class="identite" id="bloc-identite">
+    <label for="prenom">Entre ton prénom ou identifiant scolaire :</label>
+    <input type="text" id="prenom" placeholder="ex. lucie.dupont">
+    <button onclick="validerIdentite()">✅ Commencer</button>
+    <p id="erreur-prenom" style="color: red;"></p>
+  </div>
 
-  <div class="carte" id="carte">
+  <div class="carte" id="carte" style="display: none;">
     Cliquez sur "Nouvelle carte" pour commencer
   </div>
 
-  <button onclick="nouvelleCarte()">🔄 Nouvelle carte</button>
+  <button id="bouton-nouvelle" onclick="nouvelleCarte()" style="display: none;">🔄 Nouvelle carte</button>
 
   <div id="feedback"></div>
+
+  <div class="score" id="score" style="display: none;">
+    Score : <span id="score-valeur">0</span> / <span id="score-total">0</span>
+  </div>
 
   <script>
     const cartes = [
@@ -36,7 +46,33 @@
       { texte: "La solidarité est essentielle", type: "valeur" }
     ];
 
+    const motsInterdits = ["con", "triche", "null", "pipi", "gros", "sexe", "fuck", "salo", "merd", "pute"];
+
     let carteActuelle = null;
+    let score = 0;
+    let total = 0;
+
+    function validerIdentite() {
+      const champ = document.getElementById("prenom");
+      const erreur = document.getElementById("erreur-prenom");
+      const nom = champ.value.trim().toLowerCase();
+
+      if (nom === "") {
+        erreur.textContent = "Merci d’entrer un prénom ou identifiant.";
+        return;
+      }
+
+      if (motsInterdits.some(mot => nom.includes(mot))) {
+        erreur.textContent = "Identifiant inapproprié. Merci de respecter les règles.";
+        return;
+      }
+
+      document.getElementById("bloc-identite").style.display = "none";
+      document.getElementById("carte").style.display = "block";
+      document.getElementById("bouton-nouvelle").style.display = "inline-block";
+      document.getElementById("score").style.display = "block";
+      nouvelleCarte();
+    }
 
     function nouvelleCarte() {
       const index = Math.floor(Math.random() * cartes.length);
@@ -50,11 +86,17 @@
     }
 
     function repondre(reponse) {
+      total++;
       if (reponse === carteActuelle.type) {
+        score++;
         document.getElementById('feedback').innerHTML = "<p class='correct'>✅ Bonne réponse !</p>";
       } else {
         document.getElementById('feedback').innerHTML = "<p class='incorrect'>❌ Mauvaise réponse.</p>";
       }
+      document.getElementById('score-valeur').textContent = score;
+      document.getElementById('score-total').textContent = total;
+
+      // ici on ajoutera l'enregistrement dans Google Sheet (étape suivante)
     }
   </script>
 
