@@ -37,16 +37,23 @@
   </div>
 
   <script>
-    const cartes = [
-      { texte: "Il faut dire bonjour en entrant dans une pièce", type: "norme" },
-      { texte: "La liberté est un droit fondamental", type: "valeur" },
-      { texte: "On se met en rang avant d'entrer en classe", type: "norme" },
-      { texte: "La justice est importante dans une société", type: "valeur" },
-      { texte: "Il ne faut pas tricher pendant un examen", type: "norme" },
-      { texte: "La solidarité est essentielle", type: "valeur" }
-    ];
+   const cartes = [
+  {
+    type: "qcm-norme",
+    texte: "Parmi les propositions suivantes, cochez celles qui correspondent à la notion de NORME :",
+    propositions: [
+      { texte: "Manière d’être ou d’agir qu’une société reconnaît comme idéale.", juste: false },
+      { texte: "Sert à mettre en pratique les valeurs d’une société, d’un groupe social.", juste: true },
+      { texte: "Permet d’avoir un comportement adapté et efficace dans de nombreuses situations.", juste: true },
+      { texte: "Oriente les comportements des individus.", juste: false },
+      { texte: "Rend estimable la personne qui la met en pratique.", juste: false },
+      { texte: "Sert également de référence pour déterminer ce qui est bien ou ce qui est mal.", juste: false },
+      { texte: "Action qui permet de rendre une valeur concrète.", juste: true }
+    ]
+  }
+];
 
-    const motsInterdits = ["con", "triche", "null", "pipi", "gros", "sexe", "fuck", "salo", "merd", "pute"];
+    const motsInterdits = ["con", "triche", "null", "pipi", "gros", "sexe", "fuck", "salope", "merde", "pute", "bite", "nichon", "nichons", "connasse", "salop", "put"];
 
     let carteActuelle = null;
     let score = 0;
@@ -75,15 +82,44 @@
     }
 
     function nouvelleCarte() {
-      const index = Math.floor(Math.random() * cartes.length);
-      carteActuelle = cartes[index];
-      document.getElementById('carte').innerHTML = `
-        <p><strong>${carteActuelle.texte}</strong></p>
-        <button onclick="repondre('norme')">Norme</button>
-        <button onclick="repondre('valeur')">Valeur</button>
-      `;
-      document.getElementById('feedback').innerHTML = '';
+  const index = Math.floor(Math.random() * cartes.length);
+  carteActuelle = cartes[index];
+  document.getElementById('feedback').innerHTML = '';
+
+  if (carteActuelle.type === "qcm-norme") {
+    let html = `<p><strong>${carteActuelle.texte}</strong></p><form id="form-qcm">`;
+    carteActuelle.propositions.forEach((prop, i) => {
+      html += `<label><input type="checkbox" name="prop${i}"> ${prop.texte}</label><br>`;
+    });
+    html += `</form><button onclick="validerQCM()">Valider</button>`;
+    document.getElementById('carte').innerHTML = html;
+  }
+}
+
+    function validerQCM() {
+  const form = document.getElementById('form-qcm');
+  const inputs = form.querySelectorAll('input[type="checkbox"]');
+  let correct = true;
+
+  carteActuelle.propositions.forEach((prop, i) => {
+    const coche = inputs[i].checked;
+    if ((coche && !prop.juste) || (!coche && prop.juste)) {
+      correct = false;
     }
+  });
+
+  if (correct) {
+    score++;
+    document.getElementById('feedback').innerHTML = "<p class='correct'>✅ Très bien ! Toutes les bonnes réponses ont été cochées.</p>";
+  } else {
+    document.getElementById('feedback').innerHTML = "<p class='incorrect'>❌ Certaines réponses sont incorrectes. Essaie encore !</p>";
+  }
+
+  total++;
+  document.getElementById('score-valeur').textContent = score;
+  document.getElementById('score-total').textContent = total;
+}
+
 
     function repondre(reponse) {
       total++;
